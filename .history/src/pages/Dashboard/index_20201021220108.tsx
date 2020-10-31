@@ -1,0 +1,65 @@
+import React, { useState, FormEvent } from 'react';
+import { FiChevronRight } from 'react-icons/fi';
+import api from '../../services/api';
+
+import logoImg from '../../assets/logo.svg';
+
+import { Title, Form, Repositories } from './styles';
+import Repository from '../Repository';
+
+interface Repository {
+  full_name: string;
+  description: string;
+  url: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
+const Dashboard: React.FC = () => {
+  const [NewRepo, setNewRepo] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+
+  async function handleAddRepository(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
+    const response = await api.get<Repository>(`/repos/${NewRepo}`);
+    const repository = response.data;
+
+    setRepositories([...repositories, repository]);
+    console.log(response);
+  }
+  return (
+    <>
+      <img src={logoImg} alt="Github Explorer" />
+      <Title>Explore repositórios no Github</Title>
+      <Form onSubmit={handleAddRepository}>
+        <input
+          value={NewRepo}
+          onChange={e => setNewRepo(e.target.value)}
+          placeholder="Digite o nome do repositório"
+        />
+        <button type="submit">Pesquisar</button>
+      </Form>
+      <Repositories>
+        {repositories.map((repository) => (
+          <a key={repository.full_name} href={repository.url} >
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>rocketseat/unform</strong>
+              <p>Desafio de final da unidade 2 do rocktseat Gostack</p>
+            </div>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
+      </Repositories>
+    </>
+  );
+};
+
+export default Dashboard;
